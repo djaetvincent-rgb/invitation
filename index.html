@@ -4,399 +4,20 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="Invitation au mariage de Djanomo et Vincent — 15 août 2026.">
   <title>D & V — Invitation</title>
-
-  <!-- FICHIERS À LA RACINE (même dossier que index.html) :
-    - envelope.webp
-    - letter.webp
-  -->
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="preload" as="image" href="envelope.webp">
+  <link rel="preload" as="image" href="letter.webp">
 
-  <style>
-    :root{
-      --ink:#0b0b0b;
-      --ease:cubic-bezier(.2,.85,.2,1);
-      --shadow:0 28px 88px rgba(0,0,0,.16);
-      --max:860px;
-      --border: rgba(0,0,0,.14);
-
-      /* Carte noire (INVITATION) */
-      --card:#0b0b0b;
-      --card-ink: rgba(255,255,255,.94);
-      --card-ink-soft: rgba(255,255,255,.78);
-      --card-ink-faint: rgba(255,255,255,.62);
-      --card-border: rgba(255,255,255,.14);
-
-      /* RSVP hearts */
-      --hearts-opacity: .12;   /* plus bas = plus discret */
-      --hearts-size: 220px;
-    }
-
-    *{ box-sizing:border-box; }
-    html,body{ height:100%; }
-    body{
-      margin:0;
-      color:var(--ink);
-      font-family:"Cormorant Garamond","Times New Roman",serif;
-      background:#f4f4f4;
-      overflow-x:hidden;
-      -webkit-font-smoothing:antialiased;
-      -moz-osx-font-smoothing:grayscale;
-    }
-
-    /* Fond neutre + grain léger */
-    body::before{
-      content:"";
-      position:fixed;
-      inset:0;
-      background: radial-gradient(1400px 900px at 50% 18%, #ffffff 0%, #f2f2f2 70%, #ececec 100%);
-      z-index:-5;
-    }
-    body::after{
-      content:"";
-      position:fixed;
-      inset:-80px;
-      pointer-events:none;
-      opacity:.14;
-      z-index:-4;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
-      mix-blend-mode:multiply;
-    }
-
-    /* ===================== COVER (ENVELOPPE) ===================== */
-    .cover{
-      position:fixed;
-      inset:0;
-      display:grid;
-      place-items:center;
-      z-index:50;
-      overflow:hidden;
-      touch-action: manipulation;
-      background:transparent;
-    }
-    .stage{
-      width: min(1040px, 98vw);
-      aspect-ratio: 4 / 3;
-      position:relative;
-      filter: drop-shadow(var(--shadow));
-      perspective: 1200px;
-    }
-    .envImg{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      border-radius:22px;
-      border:1px solid var(--border);
-      background:#fff;
-      user-select:none;
-      -webkit-user-drag:none;
-      z-index:1;
-    }
-    .flap{
-      position:absolute;
-      inset:0;
-      border-radius:22px;
-      overflow:hidden;
-      transform-origin: 50% 0%;
-      transform: rotateX(0deg);
-      transition: transform 2400ms var(--ease);
-      will-change: transform;
-      pointer-events:none;
-      backface-visibility:hidden;
-      z-index:5;
-    }
-    .flap img{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
-      user-select:none;
-      -webkit-user-drag:none;
-      filter: contrast(1.03);
-    }
-    .flap::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
-      background: radial-gradient(900px 360px at 50% 0%, rgba(0,0,0,.22), transparent 62%);
-      opacity:.22;
-      pointer-events:none;
-    }
-
-    .letter{
-      position:absolute;
-      left:50%;
-      bottom: 9.5%;
-      width: calc(100% - 150px);
-      height: calc(100% - 200px);
-      transform: translateX(-50%) translateY(240px);
-      opacity:0;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      box-shadow: 0 26px 80px rgba(0,0,0,.18);
-      z-index:3;
-      overflow:hidden;
-      will-change: transform, opacity;
-      background:#fff;
-    }
-    .letterImg{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:cover;
-      border-radius:18px;
-      user-select:none;
-      -webkit-user-drag:none;
-      z-index:1;
-    }
-    .letter::before{
-      content:"";
-      position:absolute;
-      inset:16px;
-      border:1px solid rgba(0,0,0,.12);
-      border-radius: 14px;
-      pointer-events:none;
-      z-index:3;
-    }
-
-    .preview{
-      position:absolute;
-      inset:0;
-      display:grid;
-      place-items:center;
-      text-align:center;
-      padding: 34px;
-      opacity:0;
-      transform: translateY(12px);
-      transition: opacity 1100ms var(--ease), transform 1100ms var(--ease);
-      z-index:6;
-      pointer-events:none;
-    }
-    .pv-dv{
-      font-family: Italiana, "Times New Roman", serif;
-      font-size: 50px;
-      letter-spacing:.18em;
-      margin:0 0 10px;
-      color: rgba(0,0,0,.92);
-    }
-    .pv-names{ margin:0; font-size: 18px; letter-spacing:.04em; color: rgba(0,0,0,.86); font-weight:400; }
-    .pv-marry{ margin: 6px 0 0; font-size: 15px; font-style: italic; color: rgba(0,0,0,.74); font-weight:300; }
-    .pv-date{ margin: 14px 0 0; font-size: 12px; letter-spacing:.22em; text-transform: uppercase; color: rgba(0,0,0,.70); }
-
-    .openBtn{
-      position:absolute; inset:0; border:0; background:transparent;
-      cursor:pointer; z-index:20; border-radius:22px;
-    }
-    .openBtn:focus-visible{ outline:2px solid rgba(0,0,0,.35); outline-offset: 8px; }
-
-    .hint{
-      position:absolute; left:0; right:0; bottom:22px; text-align:center;
-      font-size: 12px; letter-spacing:.18em; text-transform: uppercase;
-      color: rgba(0,0,0,.62);
-      opacity:0; transform: translateY(6px);
-      transition: opacity 900ms var(--ease), transform 900ms var(--ease);
-      pointer-events:none; z-index:30;
-    }
-    .cover.ready .hint{ opacity:.95; transform: translateY(0); }
-
-    @keyframes letterOut {
-      0% { transform: translateX(-50%) translateY(240px); opacity:0; }
-      20% { opacity:1; }
-      100% { transform: translateX(-50%) translateY(-58px); opacity:1; }
-    }
-    .cover.press .stage{ transform: scale(.992); transition: transform 600ms var(--ease); }
-    .cover.open .flap{ transform: rotateX(174deg); }
-    .cover.open .letter{ animation: letterOut 2100ms var(--ease) forwards; }
-    .cover.open .preview{ opacity:1; transform: translateY(0); }
-    .cover.hide{ opacity:0; pointer-events:none; transition: opacity 1100ms var(--ease); }
-
-    /* ===================== PAGE ===================== */
-    .page{
-      min-height:100vh;
-      opacity:0;
-      transform: translateY(12px);
-      transition: opacity 900ms var(--ease), transform 900ms var(--ease);
-    }
-    .page.show{ opacity:1; transform: translateY(0); }
-
-    .sheet-wrap{
-      width:min(var(--max), 100%);
-      margin:0 auto;
-      padding: 18px 18px 54px;
-      display:grid;
-      gap: 18px; /* espace entre page 2 et dernière page */
-    }
-
-    /* Base “carte” */
-    .sheet{
-      border-radius: 22px;
-      overflow:hidden;
-      position:relative;
-      box-shadow: 0 22px 60px rgba(0,0,0,.10);
-      border: 1px solid rgba(0,0,0,.10);
-      background:#fff;
-      color:#111;
-    }
-    .sheet-inner{
-      position:relative;
-      padding: 100px 22px 72px;
-      text-align:center;
-      z-index:2;
-    }
-
-    /* Apparitions */
-    .reveal{ opacity:0; transform: translateY(14px); transition: opacity 1200ms var(--ease), transform 1200ms var(--ease); }
-    .reveal.in{ opacity:1; transform: translateY(0); }
-
-    /* ======= PAGE 2 : INVITATION (NOIRE) ======= */
-    .sheet--invite{
-      background: var(--card);
-      border: 1px solid var(--card-border);
-      box-shadow: 0 22px 60px rgba(0,0,0,.35);
-      color: var(--card-ink);
-    }
-    .sheet--invite .topline{ color: var(--card-ink-faint); }
-    .sheet--invite .dv{ color: var(--card-ink); }
-    .sheet--invite .names{ color: var(--card-ink); }
-    .sheet--invite .marry{ color: var(--card-ink-soft); }
-    .sheet--invite .intro{ color: var(--card-ink-soft); }
-    .sheet--invite .dateBig{ color: var(--card-ink); }
-    .sheet--invite .rule{ background: rgba(255,255,255,.28); }
-    .sheet--invite .pair .box{ border-top: 1px solid rgba(255,255,255,.14); }
-    @media (min-width: 720px){
-      .sheet--invite .pair .box{ border-left: 1px solid rgba(255,255,255,.14); border-top:none; }
-      .sheet--invite .pair .box:first-child{ border-left:none; }
-    }
-    .sheet--invite .block-title{ color: var(--card-ink); }
-    .sheet--invite .text{ color: var(--card-ink); }
-    .sheet--invite .small{ color: var(--card-ink-soft); }
-
-    /* ======= DERNIÈRE PAGE : RSVP (COEURS) ======= */
-    .sheet--rsvp{
-      background:#fff;
-      border: 1px solid rgba(0,0,0,.10);
-      box-shadow: 0 22px 60px rgba(0,0,0,.10);
-    }
-    /* Coeurs en fond (atténués) */
-    .sheet--rsvp::before{
-      content:"";
-      position:absolute;
-      inset:0;
-      z-index:0;
-      pointer-events:none;
-      opacity: var(--hearts-opacity);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3Cpath id='h' d='M120 206s-73-45-97-85C-1 81 20 38 60 38c23 0 41 13 52 30 11-17 29-30 52-30 40 0 61 43 37 83-24 40-97 85-97 85z'/%3E%3C/defs%3E%3Cg fill='none' stroke='%23000' stroke-opacity='.9' stroke-width='2'%3E%3Cuse href='%23h'/%3E%3Cuse href='%23h' x='120' y='120' transform='scale(.6)'/%3E%3Cuse href='%23h' x='-30' y='120' transform='scale(.45)'/%3E%3Cuse href='%23h' x='120' y='-30' transform='scale(.45)'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: var(--hearts-size) var(--hearts-size);
-      background-repeat: repeat;
-      background-position: 0 0;
-      filter: blur(.2px);
-    }
-    /* voile blanc discret pour garder le texte ultra lisible */
-    .sheet--rsvp::after{
-      content:"";
-      position:absolute;
-      inset:0;
-      z-index:1;
-      pointer-events:none;
-      background: linear-gradient(180deg, rgba(255,255,255,.78), rgba(255,255,255,.86) 40%, rgba(255,255,255,.90));
-    }
-    .sheet--rsvp .sheet-inner{ z-index:2; } /* textes au-dessus */
-
-    /* Typo commune */
-    .topline{ font-size: 12px; letter-spacing:.22em; text-transform: uppercase; margin-bottom: 12px; }
-    .dv{
-      font-family: Italiana, "Times New Roman", serif;
-      font-size: clamp(58px, 10vw, 98px);
-      letter-spacing:.14em;
-      margin: 0 0 10px;
-    }
-    .names{ font-size: clamp(22px, 5vw, 34px); letter-spacing:.02em; margin: 0; font-weight: 400; }
-    .marry{ margin: 8px 0 0; font-size: 18px; letter-spacing:.06em; font-weight: 300; font-style: italic; }
-    .rule{ width: 78px; height:1px; margin: 18px auto; background: rgba(0,0,0,.30); }
-    .intro{ margin: 8px auto 0; max-width: 62ch; font-size: 14.8px; line-height:1.9; font-weight: 300; font-style: italic; color: rgba(0,0,0,.78); }
-    .dateBig{
-      margin-top: 18px;
-      font-family: Italiana, "Times New Roman", serif;
-      font-size: 40px;
-      letter-spacing:.14em;
-      text-transform: uppercase;
-    }
-    .block{ padding: 18px 6px; }
-    .block-title{
-      font-family: Italiana, "Times New Roman", serif;
-      font-size: 22px;
-      letter-spacing:.18em;
-      text-transform: uppercase;
-      margin: 0 0 12px;
-    }
-    .text{ font-size: 18.5px; line-height:1.75; font-weight: 300; margin: 0; }
-    .text strong{ font-weight:500; }
-    .pair{ display:grid; gap:14px; margin-top:10px; }
-    .pair .box{ border-top: 1px solid rgba(0,0,0,.14); padding-top: 12px; }
-    .small{ font-size: 16px; line-height:1.65; color: rgba(0,0,0,.74); margin: 0; font-weight: 300; }
-    .receptionBig .text{ font-size: 23px; line-height:1.50; }
-    .receptionBig .small{ font-size: 18.5px; line-height:1.55; }
-    @media (min-width: 720px){
-      .sheet-inner{ padding: 106px 46px 82px; }
-      .pair{ grid-template-columns: 1fr 1fr; }
-      .pair .box{ border-top:none; border-left: 1px solid rgba(0,0,0,.14); padding-left: 18px; padding-top: 0; }
-      .pair .box:first-child{ border-left:none; padding-left:0; }
-    }
-
-    /* RSVP */
-    .rsvp{ text-align:left; max-width: 600px; margin: 0 auto; }
-    .row{ display:grid; gap:10px; }
-    .row input, .row select, .row textarea{
-      width:100%;
-      padding: 12px 12px;
-      border-radius: 14px;
-      border: 1px solid rgba(0,0,0,.18);
-      background: rgba(255,255,255,.92);
-      font-family: inherit;
-      font-size: 16px;
-      color:#111;
-    }
-    .row textarea{ resize: vertical; }
-    .actions{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      justify-content:center;
-      margin-top:12px;
-    }
-    .btn{
-      border:1px solid rgba(0,0,0,.18);
-      border-radius:999px;
-      padding: 10px 14px;
-      font-family: inherit;
-      font-size: 12px;
-      letter-spacing:.18em;
-      text-transform: uppercase;
-      cursor:pointer;
-      background:#fff;
-      color:#111;
-    }
-    .btn.primary{ background:#111; color:#fff; }
-    .status{ text-align:center; margin-top:10px; font-size: 14px; color: rgba(0,0,0,.78); font-weight:300; min-height: 20px; }
-    .footer{ text-align:center; padding: 18px 0 0; color: rgba(0,0,0,.70); font-size: 13px; letter-spacing:.06em; font-weight: 300; }
-
-    @media (prefers-reduced-motion: reduce){
-      *{ transition:none !important; animation:none !important; }
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-  <!-- COVER -->
+  <!-- COUVERTURE -->
   <section id="cover" class="cover" aria-label="Enveloppe">
     <div class="stage" id="stage">
       <img class="envImg" src="envelope.webp" alt="Enveloppe" />
@@ -405,7 +26,7 @@
       </div>
 
       <div class="letter" id="letter" aria-hidden="true">
-        <img class="letterImg" src="letter.webp" alt="Papeterie" />
+        <img class="letterImg" src="letter.webp" alt="Lettre d’invitation au mariage de Djanomo et Vincent" loading="lazy" />
         <div class="preview" id="preview">
           <div class="pv-dv">D &amp; V</div>
           <p class="pv-names">Djanomo &amp; Vincent</p>
@@ -414,17 +35,15 @@
         </div>
       </div>
 
-      <button id="openBtn" class="openBtn" type="button" aria-label="Ouvrir"></button>
+      <button id="openBtn" class="openBtn" type="button" aria-label="Ouvrir l’enveloppe de l’invitation"></button>
       <div class="hint">Toucher pour ouvrir</div>
     </div>
   </section>
 
-  <!-- PAGE -->
+  <!-- PAGE PRINCIPALE -->
   <div id="page" class="page" aria-live="polite">
     <div class="sheet-wrap">
-
-      <!-- PAGE 2 : INVITATION (NOIRE) -->
-      <div class="sheet sheet--invite">
+      <div class="sheet">
         <div class="sheet-inner">
           <div class="topline reveal">Invitation</div>
           <div class="dv reveal">D&nbsp;&amp;&nbsp;V</div>
@@ -473,28 +92,16 @@
             <p class="text"><strong>Cuisine franco-sénégalaise</strong>.</p>
             <p class="small">Merci de nous signaler toute allergie ou contrainte alimentaire.</p>
           </div>
-        </div>
-      </div>
 
-      <!-- DERNIÈRE PAGE : RSVP (COEURS) -->
-      <div class="sheet sheet--rsvp" id="rsvp">
-        <div class="sheet-inner">
-          <div class="topline reveal">Confirmation</div>
-          <div class="dv reveal">RSVP</div>
-          <p class="intro reveal" style="max-width:50ch;">
-            Merci de confirmer votre présence afin que nous puissions organiser la réception au mieux.
-          </p>
-
-          <div class="block reveal">
+          <div class="block reveal" id="rsvp">
             <h2 class="block-title">Confirmation de présence</h2>
             <div class="rsvp">
               <form id="rsvpForm">
-                <div class="row" style="grid-template-columns:1fr; gap:10px;">
+                <div class="row">
                   <div>
                     <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Nom & prénom</div>
                     <input name="name" required placeholder="Ex : Camille Dupont">
                   </div>
-
                   <div>
                     <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Présence</div>
                     <select name="attendance" required>
@@ -503,19 +110,15 @@
                       <option value="Non">Non, je ne pourrai pas</option>
                     </select>
                   </div>
-
-                  <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <div>
-                      <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Adultes</div>
-                      <input name="adults" type="number" min="0" value="1" required>
-                    </div>
-                    <div>
-                      <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Enfants</div>
-                      <input name="children" type="number" min="0" value="0" required>
-                    </div>
-                  </div>
-
                   <div>
+                    <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Adultes</div>
+                    <input name="adults" type="number" min="0" value="1" required>
+                  </div>
+                  <div>
+                    <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Enfants</div>
+                    <input name="children" type="number" min="0" value="0" required>
+                  </div>
+                  <div class="full">
                     <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Couchage</div>
                     <select name="sleep" required>
                       <option value="" selected disabled>Choisir…</option>
@@ -523,8 +126,7 @@
                       <option value="Non">Non, pas de couchage</option>
                     </select>
                   </div>
-
-                  <div>
+                  <div class="full">
                     <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Allergies / régimes</div>
                     <textarea name="allergies" rows="3" placeholder="Ex : fruits à coque, gluten, végétarien…"></textarea>
                   </div>
@@ -543,136 +145,497 @@
           <div class="footer reveal">Djanomo &amp; Vincent</div>
         </div>
       </div>
-
     </div>
   </div>
 
-  <script>
-    // ========= COVER OPEN =========
-    const cover = document.getElementById("cover");
-    const page = document.getElementById("page");
-    const openBtn = document.getElementById("openBtn");
-
-    requestAnimationFrame(() => setTimeout(() => cover.classList.add("ready"), 220));
-
-    function press(){
-      cover.classList.add("press");
-      setTimeout(() => cover.classList.remove("press"), 520);
-    }
-
-    function openEnvelope(){
-      if(cover.classList.contains("open")) return;
-      press();
-      cover.classList.add("open");
-      setTimeout(() => {
-        cover.classList.add("hide");
-        page.classList.add("show");
-        window.scrollTo(0,0);
-      }, 3200);
-    }
-
-    openBtn.addEventListener("click", (e) => {
-      e.preventDefault();
-      openEnvelope();
-    });
-
-    // ========= REVEAL SCROLL =========
-    const reveals = document.querySelectorAll(".reveal");
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting){
-          entry.target.classList.add("in");
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
-    reveals.forEach(el => io.observe(el));
-
-    // ========= RSVP -> Apps Script =========
-    const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzg1nIvnWwedsz7bGqqhv0qTFtSi6w-I0JeoLIYWrKlmjkWgxI5MueyXMj5ywb8rAf8/exec";
-
-    const form = document.getElementById("rsvpForm");
-    const copyBtn = document.getElementById("copyBtn");
-    const sendBtn = document.getElementById("sendBtn");
-    const statusEl = document.getElementById("status");
-
-    function safeInt(v, def=0){
-      const n = parseInt(v ?? def, 10);
-      return Number.isFinite(n) ? Math.max(0, n) : def;
-    }
-
-    function getData(){
-      const fd = new FormData(form);
-      const obj = Object.fromEntries(fd.entries());
-      return {
-        name: (obj.name || "").trim(),
-        attendance: obj.attendance || "",
-        adults: safeInt(obj.adults, 0),
-        children: safeInt(obj.children, 0),
-        sleep: obj.sleep || "",
-        allergies: (obj.allergies || "").trim()
-      };
-    }
-
-    function buildMessage(data){
-      return [
-        "RSVP — Mariage Djanomo & Vincent (15/08/2026)",
-        "",
-        "Nom : " + data.name,
-        "Présence : " + data.attendance,
-        "Adultes : " + data.adults,
-        "Enfants : " + data.children,
-        "Couchage : " + data.sleep,
-        "Allergies / régimes : " + (data.allergies || "—")
-      ].join("\n");
-    }
-
-    async function sendToSheetNoCors(data){
-      await fetch(APPS_SCRIPT_ENDPOINT, {
-        method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(data)
-      });
-    }
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const data = getData();
-      if(!data.name || !data.attendance){
-        statusEl.textContent = "Merci de renseigner le nom et la présence.";
-        return;
-      }
-
-      statusEl.textContent = "Envoi en cours…";
-      sendBtn.disabled = true;
-      sendBtn.style.opacity = "0.65";
-
-      try{
-        await sendToSheetNoCors(data);
-        statusEl.textContent = "Merci. Réponse envoyée.";
-        form.reset();
-      }catch(err){
-        const msg = buildMessage(data);
-        try{ await navigator.clipboard.writeText(msg); }catch(_){}
-        statusEl.textContent = "Envoi impossible. Message copié : colle-le dans WhatsApp/SMS.";
-      }finally{
-        sendBtn.disabled = false;
-        sendBtn.style.opacity = "1";
-      }
-    });
-
-    copyBtn.addEventListener("click", async () => {
-      const data = getData();
-      const msg = buildMessage(data);
-      try{
-        await navigator.clipboard.writeText(msg);
-        statusEl.textContent = "Message copié.";
-      }catch(e){
-        statusEl.textContent = "Copie impossible sur cet appareil.";
-      }
-    });
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
+:root {
+  --ink:#0b0b0b;
+  --paper:#ffffff;
+  --ease:cubic-bezier(.2,.85,.2,1);
+  --shadow:0 28px 88px rgba(0,0,0,.16);
+  --max:860px;
+  --border: rgba(0,0,0,.14);
+  --card:#0b0b0b;
+  --card-ink: rgba(255,255,255,.94);
+  --card-ink-soft: rgba(255,255,255,.78);
+  --card-ink-faint: rgba(255,255,255,.62);
+  --card-border: rgba(255,255,255,.14);
+  --hearts-opacity: .14;
+  --hearts-size: 220px;
+}
+
+* { box-sizing:border-box; }
+html,body { height:100%; }
+body {
+  margin:0;
+  color:var(--ink);
+  font-family:"Cormorant Garamond","Times New Roman",serif;
+  background:#f4f4f4;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+body::before {
+  content:"";
+  position:fixed;
+  inset:0;
+  background: radial-gradient(1400px 900px at 50% 18%, #ffffff 0%, #f2f2f2 70%, #ececec 100%);
+  z-index:-5;
+}
+body::after {
+  content:"";
+  position:fixed;
+  inset:-80px;
+  pointer-events:none;
+  opacity:.14;
+  z-index:-4;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;
+}
+
+/* COUVERTURE */
+.cover {
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:center;
+  z-index:50;
+  overflow:hidden;
+  touch-action: manipulation;
+  background:transparent;
+}
+.stage {
+  width: min(1040px, 98vw);
+  aspect-ratio: 4 / 3;
+  position:relative;
+  filter: drop-shadow(var(--shadow));
+  perspective: 1200px;
+}
+.envImg {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:22px;
+  border:1px solid var(--border);
+  background:#fff;
+  user-select:none;
+  -webkit-user-drag:none;
+  z-index:1;
+}
+.flap {
+  position:absolute;
+  inset:0;
+  border-radius:22px;
+  overflow:hidden;
+  transform-origin: 50% 0%;
+  transform: rotateX(0deg);
+  transition: transform 2400ms var(--ease);
+  will-change: transform;
+  pointer-events:none;
+  backface-visibility:hidden;
+  z-index:5;
+}
+.flap img {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
+  user-select:none;
+  -webkit-user-drag:none;
+  filter: contrast(1.03);
+}
+.flap::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
+  background: radial-gradient(900px 360px at 50% 0%, rgba(0,0,0,.22), transparent 62%);
+  opacity:.22;
+  pointer-events:none;
+}
+
+.letter {
+  position:absolute;
+  left:50%;
+  bottom: 9.5%;
+  width: calc(100% - 150px);
+  height: calc(100% - 200px);
+  transform: translateX(-50%) translateY(240px);
+  opacity:0;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 26px 80px rgba(0,0,0,.18);
+  z-index:3;
+  overflow:hidden;
+  will-change: transform, opacity;
+  background:#fff;
+}
+.letterImg {
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:18px;
+  user-select:none;
+  -webkit-user-drag:none;
+  z-index:1;
+}
+.letter::before {
+  content:"";
+  position:absolute;
+  inset:16px;
+  border:1px solid rgba(0,0,0,.12);
+  border-radius: 14px;
+  pointer-events:none;
+  z-index:3;
+}
+
+.preview {
+  position:absolute;
+  inset:0;
+  display:grid;
+  place-items:center;
+  text-align:center;
+  padding: 34px;
+  opacity:0;
+  transform: translateY(12px);
+  transition: opacity 1100ms var(--ease), transform 1100ms var(--ease);
+  z-index:6;
+  pointer-events:none;
+}
+.pv-dv {
+  font-family: Italiana, "Times New Roman", serif;
+  font-size: 50px;
+  letter-spacing:.18em;
+  margin:0 0 10px;
+  color: rgba(0,0,0,.92);
+}
+.pv-names {
+  margin:0;
+  font-size: 18px;
+  letter-spacing:.04em;
+  color: rgba(0,0,0,.86);
+  font-weight:400;
+}
+.pv-marry {
+  margin: 6px 0 0;
+  font-size: 15px;
+  font-style: italic;
+  color: rgba(0,0,0,.74);
+  font-weight:300;
+}
+.pv-date {
+  margin: 14px 0 0;
+  font-size: 12px;
+  letter-spacing:.22em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.70);
+}
+
+.openBtn {
+  position:absolute;
+  inset:0;
+  border:0;
+  background:transparent;
+  cursor:pointer;
+  z-index:20;
+  border-radius:22px;
+}
+.openBtn:focus-visible {
+  outline:2px solid rgba(0,0,0,.35);
+  outline-offset: 8px;
+}
+.hint {
+  position:absolute;
+  left:0;
+  right:0;
+  bottom:22px;
+  text-align:center;
+  font-size: 12px;
+  letter-spacing:.18em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,.62);
+  opacity:0;
+  transform: translateY(6px);
+  transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+  pointer-events:none;
+  z-index:30;
+}
+.cover.ready .hint { opacity:.95; transform: translateY(0); }
+
+@keyframes letterOut {
+  0% { transform: translateX(-50%) translateY(240px); opacity:0; }
+  20% { opacity:1; }
+  100% { transform: translateX(-50%) translateY(-58px); opacity:1; }
+}
+
+.cover.press .stage { transform: scale(.992); transition: transform 600ms var(--ease); }
+.cover.open .flap { transform: rotateX(174deg); }
+.cover.open .letter { animation: letterOut 2100ms var(--ease) forwards; }
+.cover.open .preview { opacity:1; transform: translateY(0); }
+.cover.hide { opacity:0; pointer-events:none; transition: opacity 1100ms var(--ease); }
+
+/* PAGE PRINCIPALE */
+.page {
+  min-height:100vh;
+  opacity:0;
+  transform: translateY(12px);
+  transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+}
+.page.show { opacity:1; transform: translateY(0); }
+
+.sheet-wrap {
+  width:min(var(--max), 100%);
+  margin:0 auto;
+  padding: 18px 18px 54px;
+}
+.sheet {
+  background: var(--card);
+  border: 1px solid var(--card-border);
+  border-radius: 22px;
+  box-shadow: 0 22px 60px rgba(0,0,0,.35);
+  overflow:hidden;
+  position:relative;
+  color: var(--card-ink);
+}
+.sheet::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  opacity: var(--hearts-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240' viewBox='0 0 240 240'%3E%3Cdefs%3E%3Cpath id='h' d='M120 206s-73-45-97-85C-1 81 20 38 60 38c. -. . 85-97 85z'/%3E%3C/defs%3E%3Cg fill='none' stroke='white' stroke-opacity='.9' stroke-width='2'%3E%3Cuse href='%23h' x='0' y='0'/%3E%3Cuse href='%23h' x='120' y='120' transform='scale(.6)'/%3E%3Cuse href='%23h' x='-30' y='120' transform='scale(.45)'/%3E%3Cuse href='%23h' x='120' y='-30' transform='scale(.45)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: var(--hearts-size) var(--hearts-size);
+  background-repeat: repeat;
+  background-position: 0 0;
+  filter: blur(.2px);
+  mix-blend-mode: screen;
+  animation: heartsMove 60s linear infinite;
+}
+@keyframes heartsMove {
+  from { background-position: 0 0; }
+  to { background-position: 240px 240px; }
+}
+.sheet::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:1;
+  pointer-events:none;
+  background:
+    radial-gradient(1200px 800px at 50% 10%, rgba(255,255,255,.06), transparent 55%),
+    linear-gradient(180deg, rgba(0,0,0,.45), rgba(0,0,0,.55) 55%, rgba(0,0,0,.60));
+  opacity: .9;
+}
+.sheet-inner {
+  position:relative;
+  padding: 100px 22px 72px;
+  text-align:center;
+  z-index:2;
+}
+.topline {
+  font-size: 12px;
+  letter-spacing:.22em;
+  text-transform: uppercase;
+  color: var(--card-ink-faint);
+  margin-bottom: 12px;
+}
+.dv {
+  font-family: Italiana, "Times New Roman", serif;
+  font-size: clamp(58px, 10vw, 98px);
+  letter-spacing:.14em;
+  margin: 0 0 10px;
+  color: var(--card-ink);
+}
+.names {
+  font-size: clamp(22px, 5vw, 34px);
+  letter-spacing:.02em;
+  margin: 0;
+  font-weight: 400;
+  color: var(--card-ink);
+}
+.marry {
+  margin: 8px 0 0;
+  font-size: 18px;
+  letter-spacing:.06em;
+  color: var(--card-ink-soft);
+  font-weight: 300;
+  font-style: italic;
+}
+.rule {
+  width: 78px;
+  height:1px;
+  background: rgba(255,255,255,.28);
+  margin: 18px auto;
+}
+.intro {
+  margin: 8px auto 0;
+  max-width: 62ch;
+  font-size: 14.8px;
+  line-height:1.9;
+  color: var(--card-ink-soft);
+  font-weight: 300;
+  font-style: italic;
+}
+.dateBig {
+  margin-top: 18px;
+  font-family: Italiana, "Times New Roman", serif;
+  font-size: 40px;
+  letter-spacing:.14em;
+  text-transform: uppercase;
+  color: var(--card-ink);
+}
+.reveal {
+  opacity:0;
+  transform: translateY(14px);
+  transition: opacity 1200ms var(--ease), transform 1200ms var(--ease);
+}
+.reveal.in { opacity:1; transform: translateY(0); }
+
+@media (min-width: 720px) {
+  .sheet-inner { padding: 106px 46px 82px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition:none !important; animation:none !important; }
+}
+// ========= COUVERTURE =========
+const cover = document.getElementById("cover");
+const page = document.getElementById("page");
+const openBtn = document.getElementById("openBtn");
+let isOpening = false;
+
+requestAnimationFrame(() => setTimeout(() => cover.classList.add("ready"), 220));
+
+function press() {
+  cover.classList.add("press");
+  setTimeout(() => cover.classList.remove("press"), 520);
+}
+
+function openEnvelope() {
+  if (isOpening || cover.classList.contains("open")) return;
+  isOpening = true;
+  press();
+  cover.classList.add("open");
+  setTimeout(() => {
+    cover.classList.add("hide");
+    page.classList.add("show");
+    window.scrollTo(0, 0);
+  }, 3200);
+}
+
+openBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  openEnvelope();
+});
+
+// ========= ANIMATION SCROLL =========
+const reveals = document.querySelectorAll(".reveal");
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("in");
+      io.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12 });
+reveals.forEach(el => io.observe(el));
+
+// ========= FORMULAIRE RSVP =========
+const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzg1nIvnWwedsz7bGqqhv0qTFtSi6w-I0JeoLIYWrKlmjkWgxI5MueyXMj5ywb8rAf8/exec";
+
+const form = document.getElementById("rsvpForm");
+const copyBtn = document.getElementById("copyBtn");
+const sendBtn = document.getElementById("sendBtn");
+const statusEl = document.getElementById("status");
+
+function safeInt(v, def = 0) {
+  const n = parseInt(v ?? def, 10);
+  return Number.isFinite(n) ? Math.max(0, n) : def;
+}
+
+function getData() {
+  const fd = new FormData(form);
+  const obj = Object.fromEntries(fd.entries());
+  return {
+    name: (obj.name || "").trim(),
+    attendance: obj.attendance || "",
+    adults: safeInt(obj.adults, 0),
+    children: safeInt(obj.children, 0),
+    sleep: obj.sleep || "",
+    allergies: (obj.allergies || "").trim()
+  };
+}
+
+function buildMessage(data) {
+  return [
+    "RSVP — Mariage Djanomo & Vincent (15/08/2026)",
+    "",
+    "Nom : " + data.name,
+    "Présence : " + data.attendance,
+    "Adultes : " + data.adults,
+    "Enfants : " + data.children,
+    "Couchage : " + data.sleep,
+    "Allergies / régimes : " + (data.allergies || "—")
+  ].join("\n");
+}
+
+async function sendToSheetNoCors(data) {
+  await fetch(APPS_SCRIPT_ENDPOINT, {
+    method: "POST",
+    mode: "no-cors",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify(data)
+  });
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const data = getData();
+  if (!data.name || !data.attendance) {
+    statusEl.textContent = "Merci de renseigner le nom et la présence.";
+    return;
+  }
+
+  statusEl.textContent = "Envoi en cours…";
+  sendBtn.disabled = true;
+  sendBtn.style.opacity = "0.65";
+
+  try {
+    await sendToSheetNoCors(data);
+    statusEl.textContent = "Merci. Réponse envoyée.";
+    form.reset();
+  } catch (err) {
+    const msg = buildMessage(data);
+    try { await navigator.clipboard.writeText(msg); } catch (_) {}
+    statusEl.textContent = "Envoi impossible. Message copié : colle-le dans WhatsApp/SMS.";
+  } finally {
+    sendBtn.disabled = false;
+    sendBtn.style.opacity = "1";
+    statusEl.style.transition = "opacity 0.6s";
+    statusEl.style.opacity = "1";
+    setTimeout(() => statusEl.style.opacity = "0", 4000);
+  }
+});
+
+copyBtn.addEventListener("click", async () => {
+  const data = getData();
+  const msg = buildMessage(data);
+  try {
+    await navigator.clipboard.writeText(msg);
+    statusEl.textContent = "Message copié.";
+  } catch (e) {
+    statusEl.textContent = "Copie impossible sur cet appareil.";
+  }
+});
+
