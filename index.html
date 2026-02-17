@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>D & V — Invitation</title>
+
+  <!-- FICHIERS À LA RACINE (même dossier que index.html) :
+    - envelope.webp
+    - letter.webp (optionnel : utilisé comme texture très légère si tu veux, sinon ignoré)
+  -->
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Italiana&family=Cormorant+Garamond:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --ease:cubic-bezier(.2,.85,.2,1);
+      --shadow:0 28px 88px rgba(0,0,0,.16);
+      --max:860px;
+
+      /* Noir "carton" */
+      --card:#0b0b0b;
+      --card-ink: rgba(255,255,255,.94);
+      --card-ink-soft: rgba(255,255,255,.78);
+      --card-ink-faint: rgba(255,255,255,.62);
+
+      /* Coeurs RSVP */
+      --hearts-opacity: .065;
+      --hearts-size: 210px;
+
+      /* UI */
+      --border: rgba(0,0,0,.14);
+      --ring: rgba(0,0,0,.32);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+
+    body{
+      margin:0;
+      font-family:"Cormorant Garamond","Times New Roman",serif;
+      background:#f4f4f4;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      color:#111;
+    }
+
+    /* Fond neutre + grain léger */
+    body::before{
+      content:"";
+      position:fixed;
+      inset:0;
+      background: radial-gradient(1400px 900px at 50% 18%, #ffffff 0%, #f2f2f2 70%, #ececec 100%);
+      z-index:-5;
+    }
+    body::after{
+      content:"";
+      position:fixed;
+      inset:-80px;
+      pointer-events:none;
+      opacity:.12;
+      z-index:-4;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='280' height='280'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='280' height='280' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode:multiply;
+    }
+
+    /* ===================== COVER ===================== */
+    .cover{
+      position:fixed;
+      inset:0;
+      display:grid;
+      place-items:center;
+      z-index:50;
+      overflow:hidden;
+      touch-action: manipulation;
+      background:transparent;
+    }
+
+    .stage{
+      width: min(1040px, 98vw);
+      aspect-ratio: 4 / 3;
+      position:relative;
+      filter: drop-shadow(var(--shadow));
+      perspective: 1400px;
+      transform-style: preserve-3d;
+    }
+
+    /* petite lueur luxe */
+    .stage::after{
+      content:"";
+      position:absolute;
+      inset:-30%;
+      background: radial-gradient(closest-side at 50% 35%, rgba(255,255,255,.35), transparent 62%);
+      opacity:0;
+      transform: translateY(8px);
+      transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+      pointer-events:none;
+      z-index:2;
+    }
+    .cover.open .stage::after{
+      opacity:.22;
+      transform: translateY(0);
+    }
+
+    .envImg{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:22px;
+      border:1px solid var(--border);
+      background:#fff;
+      user-select:none;
+      -webkit-user-drag:none;
+      z-index:1;
+      transform: translateZ(0);
+    }
+
+    .flap{
+      position:absolute;
+      inset:0;
+      border-radius:22px;
+      overflow:hidden;
+      transform-origin: 50% 0%;
+      transform: rotateX(0deg) translateZ(2px);
+      transition: transform 2500ms var(--ease);
+      will-change: transform;
+      pointer-events:none;
+      backface-visibility:hidden;
+      z-index:5;
+    }
+    .flap img{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
+      user-select:none;
+      -webkit-user-drag:none;
+      filter: contrast(1.03);
+    }
+    .flap::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      clip-path: polygon(0 0, 100% 0, 100% 56%, 50% 73%, 0 56%);
+      background: radial-gradient(900px 360px at 50% 0%, rgba(0,0,0,.28), transparent 62%);
+      opacity:.30;
+      pointer-events:none;
+    }
+
+    /* Carton noir qui sort */
+    .letter{
+      position:absolute;
+      left:50%;
+      bottom: 9.5%;
+      width: calc(100% - 150px);
+      height: calc(100% - 200px);
+
+      transform: translateX(-50%) translateY(260px) translateZ(1px);
+      opacity:0;
+
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.18);
+      box-shadow: 0 28px 90px rgba(0,0,0,.40);
+      background:
+        radial-gradient(900px 520px at 50% 0%, rgba(255,255,255,.09), transparent 62%),
+        linear-gradient(180deg, rgba(255,255,255,.04), transparent 40%),
+        #0b0b0b;
+
+      z-index:3;
+      overflow:hidden;
+      will-change: transform, opacity;
+    }
+
+    /* vignette + profondeur */
+    .letter::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      background: radial-gradient(1200px 700px at 50% 40%, transparent 55%, rgba(0,0,0,.38));
+      opacity:.85;
+      pointer-events:none;
+      z-index:2;
+    }
+
+    /* cadre interne */
+    .letter::before{
+      content:"";
+      position:absolute;
+      inset:16px;
+      border:1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      pointer-events:none;
+      z-index:3;
+    }
+
+    .preview{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      text-align:center;
+      padding: 34px;
+      opacity:0;
+      transform: translateY(12px);
+      transition: opacity 1200ms var(--ease), transform 1200ms var(--ease);
+      z-index:6;
+      pointer-events:none;
+    }
+    .pv-dv{
+      font-family: Italiana, "Times New Roman", serif;
+      font-size: 54px;
+      letter-spacing:.18em;
+      margin:0 0 10px;
+      color: rgba(255,255,255,.96);
+    }
+    .pv-names{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.05em;
+      color: rgba(255,255,255,.86);
+      font-weight:400;
+    }
+    .pv-marry{
+      margin: 6px 0 0;
+      font-size: 15px;
+      font-style: italic;
+      color: rgba(255,255,255,.75);
+      font-weight:300;
+    }
+    .pv-date{
+      margin: 14px 0 0;
+      font-size: 12px;
+      letter-spacing:.24em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.70);
+    }
+
+    .openBtn{
+      position:absolute;
+      inset:0;
+      border:0;
+      background:transparent;
+      cursor:pointer;
+      z-index:100;
+      border-radius:22px;
+      pointer-events:auto;
+    }
+    .openBtn:focus-visible{
+      outline:2px solid var(--ring);
+      outline-offset: 8px;
+    }
+
+    .hint{
+      position:absolute;
+      left:0;
+      right:0;
+      bottom:22px;
+      text-align:center;
+      font-size: 12px;
+      letter-spacing:.18em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,.62);
+      opacity:0;
+      transform: translateY(6px);
+      transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+      pointer-events:none;
+      z-index:30;
+    }
+    .cover.ready .hint{ opacity:.95; transform: translateY(0); }
+
+    /* Animations plus réalistes */
+    @keyframes letterOut {
+      0%   { transform: translateX(-50%) translateY(260px) translateZ(1px); opacity:0; }
+      18%  { opacity:1; }
+      72%  { transform: translateX(-50%) translateY(-72px) translateZ(1px); }
+      100% { transform: translateX(-50%) translateY(-58px) translateZ(1px); opacity:1; }
+    }
+
+    .cover.press .stage{ transform: scale(.992); transition: transform 600ms var(--ease); }
+    .cover.open .flap{ transform: rotateX(178deg) translateZ(2px); }
+    .cover.open .letter{ animation: letterOut 2300ms var(--ease) forwards; }
+    .cover.open .preview{ opacity:1; transform: translateY(0); }
+    .cover.hide{ opacity:0; pointer-events:none; transition: opacity 1100ms var(--ease); }
+
+    /* ===================== PAGES ===================== */
+    .page{
+      min-height:100vh;
+      opacity:0;
+      transform: translateY(12px);
+      transition: opacity 900ms var(--ease), transform 900ms var(--ease);
+    }
+    .page.show{ opacity:1; transform: translateY(0); }
+
+    .sheet-wrap{
+      width:min(var(--max), 100%);
+      margin:0 auto;
+      padding: 18px 18px 54px;
+    }
+
+    /* Page blanche */
+    .sheet{
+      background:#fff;
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 22px;
+      box-shadow: 0 22px 60px rgba(0,0,0,.10);
+      overflow:hidden;
+      position:relative;
+    }
+
+    /* Texture papier + bordure interne */
+    .sheet::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      background:
+        radial-gradient(1200px 800px at 50% 10%, rgba(0,0,0,.03), transparent 55%),
+        linear-gradient(180deg, rgba(0,0,0,.02), transparent 30%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='340' height='340'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.75' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='340' height='340' filter='url(%23n)' opacity='.18'/%3E%3C/svg%3E");
+      opacity:.22;
+      pointer-events:none;
+      z-index:0;
+      mix-blend-mode:multiply;
+    }
+    .sheet::after{
+      content:"";
+      position:absolute;
+      inset:18px;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius: 18px;
+      pointer-events:none;
+      z-index:1;
+    }
+
+    .sheet-inner{
+      position:relative;
+      padding: 104px 22px 74px;
+      text-align:center;
+      z-index:2;
+    }
+
+    /* Typo + hiérarchie (luxe) */
+    .topline{
+      font-size: 12px;
+      letter-spacing:.24em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,.60);
+      margin-bottom: 12px;
+    }
+    .dv{
+      font-family: Italiana, "Times New Roman", serif;
+      font-size: clamp(60px, 10vw, 104px);
+      letter-spacing:.14em;
+      margin: 0 0 8px;
+      color: rgba(0,0,0,.96);
+    }
+    .names{
+      font-size: clamp(22px, 5vw, 34px);
+      letter-spacing:.03em;
+      margin: 0;
+      font-weight: 400;
+      color: rgba(0,0,0,.94);
+    }
+    .marry{
+      margin: 10px 0 0;
+      font-size: 18px;
+      letter-spacing:.07em;
+      color: rgba(0,0,0,.84);
+      font-weight: 300;
+      font-style: italic;
+    }
+    .rule{
+      width: 78px;
+      height:1px;
+      background: rgba(0,0,0,.28);
+      margin: 18px auto;
+    }
+    .intro{
+      margin: 10px auto 0;
+      max-width: 62ch;
+      font-size: 15px;
+      line-height:1.95;
+      color: rgba(0,0,0,.84);
+      font-weight: 300;
+      font-style: italic;
+    }
+    .dateBig{
+      margin-top: 18px;
+      font-family: Italiana, "Times New Roman", serif;
+      font-size: 40px;
+      letter-spacing:.16em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,.98);
+    }
+
+    .block{ padding: 18px 6px; }
+    .block-title{
+      font-family: Italiana, "Times New Roman", serif;
+      font-size: 22px;
+      letter-spacing:.18em;
+      text-transform: uppercase;
+      margin: 0 0 12px;
+      color: rgba(0,0,0,.96);
+    }
+    .text{
+      font-size: 18.5px;
+      line-height:1.75;
+      font-weight: 300;
+      color: rgba(0,0,0,.94);
+      margin: 0;
+    }
+    .text strong{ font-weight:500; }
+    .pair{ display:grid; gap:14px; margin-top:10px; }
+    .pair .box{ border-top: 1px solid rgba(0,0,0,.14); padding-top: 12px; }
+    .small{
+      font-size: 16px;
+      line-height:1.65;
+      color: rgba(0,0,0,.82);
+      margin: 0;
+      font-weight: 300;
+    }
+    .receptionBig .text{ font-size: 23px; line-height:1.50; }
+    .receptionBig .small{ font-size: 18.5px; line-height:1.55; }
+
+    /* RSVP */
+    .rsvp{ text-align:left; max-width: 620px; margin: 0 auto; }
+    .row{ display:grid; gap:10px; }
+    .row input, .row select, .row textarea{
+      width:100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.18);
+      background: rgba(255,255,255,.92);
+      font-family: inherit;
+      font-size: 16px;
+      color:#111;
+      outline:none;
+    }
+    .row input:focus, .row select:focus, .row textarea:focus{
+      box-shadow: 0 0 0 3px rgba(0,0,0,.10);
+      border-color: rgba(0,0,0,.28);
+    }
+    .row textarea{ resize: vertical; }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      justify-content:center;
+      margin-top:12px;
+    }
+    .btn{
+      border:1px solid rgba(0,0,0,.18);
+      border-radius:999px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 12px;
+      letter-spacing:.18em;
+      text-transform: uppercase;
+      cursor:pointer;
+      background:#fff;
+      color:#111;
+      transition: transform 220ms var(--ease), box-shadow 220ms var(--ease), opacity 220ms var(--ease);
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 12px 26px rgba(0,0,0,.10); }
+    .btn:active{ transform: translateY(0); box-shadow:none; }
+    .btn.primary{ background:#111; color:#fff; }
+
+    .status{
+      text-align:center;
+      margin-top:10px;
+      font-size: 14px;
+      color: rgba(0,0,0,.82);
+      font-weight:300;
+      min-height: 22px;
+    }
+
+    /* Apparitions */
+    .reveal{
+      opacity:0;
+      transform: translateY(14px);
+      transition: opacity 1200ms var(--ease), transform 1200ms var(--ease);
+    }
+    .reveal.in{ opacity:1; transform: translateY(0); }
+
+    .footer{
+      text-align:center;
+      padding: 18px 0 0;
+      color: rgba(0,0,0,.70);
+      font-size: 13px;
+      letter-spacing:.06em;
+      font-weight: 300;
+    }
+
+    @media (min-width: 720px){
+      .sheet-inner{ padding: 110px 46px 84px; }
+      .pair{ grid-template-columns: 1fr 1fr; }
+      .pair .box{
+        border-top:none;
+        border-left: 1px solid rgba(0,0,0,.14);
+        padding-left: 18px;
+        padding-top: 0;
+      }
+      .pair .box:first-child{ border-left:none; padding-left:0; }
+      .row{ grid-template-columns: 1fr 1fr; }
+      .row .full{ grid-column: 1 / -1; }
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ transition:none !important; animation:none !important; }
+    }
+
+    /* ===================== COEURS UNIQUEMENT SUR LA DERNIÈRE CARTE RSVP ===================== */
+    .sheet.hearts-page::before{
+      background:
+        url("data:image/svg+xml,%3Csvg width='220' height='220' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M12 21s-6.716-4.574-9.193-8.216C.748 9.83 2.54 6.5 6.09 6.5c2.042 0 3.286 1.157 3.91 2.09C10.624 7.657 11.868 6.5 13.91 6.5c3.55 0 5.342 3.33 3.283 6.284C18.716 16.426 12 21 12 21z' stroke='%23000' stroke-opacity='.9' stroke-width='1.2'/%3E%3C/svg%3E");
+      background-size: var(--hearts-size);
+      background-repeat: repeat;
+      opacity: var(--hearts-opacity);
+      mix-blend-mode: multiply;
+      filter: blur(.45px);
+    }
+    .sheet.hearts-page::after{
+      inset:0;
+      border:none;
+      background: linear-gradient(180deg, rgba(255,255,255,.70), rgba(255,255,255,.86) 45%, rgba(255,255,255,.92));
+      border-radius: 22px;
+      z-index:1;
+    }
+    .sheet.hearts-page .inner-border{
+      position:absolute;
+      inset:18px;
+      border:1px solid rgba(0,0,0,.10);
+      border-radius: 18px;
+      pointer-events:none;
+      z-index:2;
+    }
+    .sheet.hearts-page .sheet-inner{ z-index:3; }
+
+    /* Toast succès */
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:18px;
+      transform: translateX(-50%) translateY(18px);
+      opacity:0;
+      pointer-events:none;
+      z-index:90;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: 0 18px 50px rgba(0,0,0,.12);
+      border-radius: 999px;
+      padding: 10px 14px;
+      backdrop-filter: blur(10px);
+      font-size: 13px;
+      letter-spacing:.02em;
+      color: rgba(0,0,0,.84);
+      transition: opacity 400ms var(--ease), transform 400ms var(--ease);
+      max-width: min(92vw, 520px);
+      text-align:center;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* bouton retour haut */
+    .toTop{
+      position:fixed;
+      right:14px;
+      bottom:14px;
+      width:44px;
+      height:44px;
+      border-radius:999px;
+      border:1px solid rgba(0,0,0,.14);
+      background: rgba(255,255,255,.92);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.12);
+      cursor:pointer;
+      display:none;
+      z-index:80;
+      font-size: 16px;
+      line-height: 44px;
+      text-align:center;
+    }
+    .page.show ~ .toTop{ display:block; }
+  </style>
+</head>
+
+<body>
+  <!-- COVER -->
+  <section id="cover" class="cover" aria-label="Enveloppe">
+    <div class="stage" id="stage">
+      <img class="envImg" src="envelope.webp" alt="Enveloppe" />
+      <div class="flap" aria-hidden="true">
+        <img src="envelope.webp" alt="" />
+      </div>
+
+      <!-- Carton noir -->
+      <div class="letter" id="letter" aria-hidden="true">
+        <div class="preview" id="preview">
+          <div class="pv-dv">D &amp; V</div>
+          <p class="pv-names">Djanomo &amp; Vincent</p>
+          <p class="pv-marry">se marient</p>
+          <div class="pv-date">15 août 2026</div>
+        </div>
+      </div>
+
+      <button id="openBtn" class="openBtn" type="button" aria-label="Ouvrir"></button>
+      <div class="hint">Toucher pour ouvrir</div>
+    </div>
+  </section>
+
+  <!-- PAGE -->
+  <div id="page" class="page" aria-live="polite">
+    <div class="sheet-wrap">
+      <div class="sheet">
+        <div class="sheet-inner">
+          <div class="topline reveal">Invitation</div>
+          <div class="dv reveal">D&nbsp;&amp;&nbsp;V</div>
+          <p class="names reveal">Djanomo &amp; Vincent</p>
+          <p class="marry reveal">se marient</p>
+          <div class="rule reveal"></div>
+
+          <p class="intro reveal">
+            10 ans de nous... 10 ans, c’est tout ?<br/>
+            Aujourd’hui on se dit oui.<br/>
+            Simplement mais intensément.
+          </p>
+
+          <div class="dateBig reveal">15 AOÛT 2026</div>
+
+          <div class="block reveal">
+            <h2 class="block-title">Programme</h2>
+            <div class="pair">
+              <div class="box">
+                <p class="text"><strong>Mairie — 14h00</strong></p>
+                <p class="small">1 Pl. de Gaulle<br/>27320 Saint-Germain-sur-Avre</p>
+              </div>
+              <div class="box">
+                <p class="text"><strong>Église — 15h30</strong></p>
+                <p class="small">4 Pl. de Gaulle<br/>27320 Saint-Germain-sur-Avre</p>
+              </div>
+            </div>
+
+            <div class="receptionBig" style="margin-top:18px;">
+              <p class="text"><strong>Réception — 18h00</strong></p>
+              <p class="small">Domaine des Trois Lys<br/>1 La Moufle<br/>28500 Vert-en-Drouais</p>
+            </div>
+          </div>
+
+          <div class="block reveal">
+            <h2 class="block-title">Couchages</h2>
+            <p class="text"><strong>25 couchages</strong> disponibles.</p>
+            <p class="small">
+              Les couchages seront attribués <strong>dans l’ordre de réception des demandes</strong>.
+              Si besoin, nous pourrons vous transmettre des adresses de <strong>gîtes</strong> et <strong>hôtels</strong> à proximité.
+            </p>
+          </div>
+
+          <div class="block reveal">
+            <h2 class="block-title">Menu</h2>
+            <p class="text"><strong>Cuisine franco-sénégalaise</strong>.</p>
+            <p class="small">Merci de nous signaler toute allergie ou contrainte alimentaire.</p>
+          </div>
+
+          <!-- Dernière carte : RSVP avec coeurs -->
+          <div class="block reveal">
+            <h2 class="block-title">Confirmation de présence</h2>
+            <p class="small" style="text-align:center;margin:0 0 10px;">
+              Merci de confirmer votre présence.
+            </p>
+
+            <div class="sheet hearts-page" style="margin:14px auto 0; max-width:760px;">
+              <div class="inner-border" aria-hidden="true"></div>
+              <div class="sheet-inner" style="padding: 44px 18px 34px;">
+                <div class="rsvp">
+                  <form id="rsvpForm" autocomplete="on">
+                    <div class="row">
+                      <div>
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Nom & prénom</div>
+                        <input name="name" required placeholder="Ex : Camille Dupont" autocomplete="name">
+                      </div>
+                      <div>
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Présence</div>
+                        <select name="attendance" required>
+                          <option value="" selected disabled>Choisir…</option>
+                          <option value="Oui">Oui, je viens</option>
+                          <option value="Non">Non, je ne pourrai pas</option>
+                        </select>
+                      </div>
+                      <div>
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Adultes</div>
+                        <input name="adults" type="number" min="0" value="1" required inputmode="numeric">
+                      </div>
+                      <div>
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Enfants</div>
+                        <input name="children" type="number" min="0" value="0" required inputmode="numeric">
+                      </div>
+                      <div class="full">
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Couchage</div>
+                        <select name="sleep" required>
+                          <option value="" selected disabled>Choisir…</option>
+                          <option value="Oui">Oui, je souhaite un couchage</option>
+                          <option value="Non">Non, pas de couchage</option>
+                        </select>
+                      </div>
+                      <div class="full">
+                        <div class="small" style="letter-spacing:.10em; text-transform:uppercase;">Allergies / régimes</div>
+                        <textarea name="allergies" rows="3" placeholder="Ex : fruits à coque, gluten, végétarien…"></textarea>
+                      </div>
+                    </div>
+
+                    <div class="actions">
+                      <button class="btn primary" id="sendBtn" type="submit">Envoyer</button>
+                      <button class="btn" type="button" id="copyBtn">Copier</button>
+                    </div>
+
+                    <div class="status" id="status"></div>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer reveal">Djanomo &amp; Vincent</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="toTop" type="button" id="toTopBtn" aria-label="Retour en haut">↑</button>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    // ========= COVER OPEN (robuste) =========
+    const cover = document.getElementById("cover");
+    const page = document.getElementById("page");
+    const openBtn = document.getElementById("openBtn");
+    const stage = document.getElementById("stage");
+
+    requestAnimationFrame(() => setTimeout(() => cover.classList.add("ready"), 220));
+
+    function press(){
+      cover.classList.add("press");
+      setTimeout(() => cover.classList.remove("press"), 520);
+    }
+
+    function openEnvelope(){
+      if (!cover || !page) return;
+      if (cover.classList.contains("open")) return;
+
+      press();
+      cover.classList.add("open");
+
+      setTimeout(() => {
+        cover.classList.add("hide");
+        page.classList.add("show");
+        window.scrollTo(0,0);
+      }, 3200);
+    }
+
+    if (openBtn) {
+      openBtn.addEventListener("click", (e) => { e.preventDefault(); openEnvelope(); });
+      openBtn.addEventListener("pointerdown", (e) => { e.preventDefault(); openEnvelope(); });
+    }
+    if (stage) {
+      stage.addEventListener("click", (e) => {
+        if (e.target && e.target.closest("button")) return;
+        openEnvelope();
+      });
+      stage.addEventListener("pointerdown", (e) => {
+        if (e.target && e.target.closest("button")) return;
+        openEnvelope();
+      });
+    }
+
+    // ========= REVEAL SCROLL =========
+    const reveals = document.querySelectorAll(".reveal");
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting){
+          entry.target.classList.add("in");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => io.observe(el));
+
+    // ========= UI helpers =========
+    const toast = document.getElementById("toast");
+    let toastT = null;
+
+    function showToast(msg){
+      if(!toast) return;
+      toast.textContent = msg;
+      toast.classList.add("show");
+      clearTimeout(toastT);
+      toastT = setTimeout(() => toast.classList.remove("show"), 2800);
+    }
+
+    const toTopBtn = document.getElementById("toTopBtn");
+    if(toTopBtn){
+      toTopBtn.addEventListener("click", () => window.scrollTo({top:0, behavior:"smooth"}));
+    }
+
+    // ========= RSVP -> Apps Script (plus fiable + anti-double envoi) =========
+    const APPS_SCRIPT_ENDPOINT = "https://script.google.com/macros/s/AKfycbzg1nIvnWwedsz7bGqqhv0qTFtSi6w-I0JeoLIYWrKlmjkWgxI5MueyXMj5ywb8rAf8/exec";
+
+    const form = document.getElementById("rsvpForm");
+    const copyBtn = document.getElementById("copyBtn");
+    const sendBtn = document.getElementById("sendBtn");
+    const statusEl = document.getElementById("status");
+
+    let isSending = false;
+
+    function safeInt(v, def=0){
+      const n = parseInt(v ?? def, 10);
+      return Number.isFinite(n) ? Math.max(0, n) : def;
+    }
+
+    function getData(){
+      const fd = new FormData(form);
+      const obj = Object.fromEntries(fd.entries());
+      return {
+        name: (obj.name || "").trim(),
+        attendance: obj.attendance || "",
+        adults: safeInt(obj.adults, 0),
+        children: safeInt(obj.children, 0),
+        sleep: obj.sleep || "",
+        allergies: (obj.allergies || "").trim(),
+        ts: new Date().toISOString(),
+        ua: navigator.userAgent
+      };
+    }
+
+    function buildMessage(data){
+      return [
+        "RSVP — Mariage Djanomo & Vincent (15/08/2026)",
+        "",
+        "Nom : " + data.name,
+        "Présence : " + data.attendance,
+        "Adultes : " + data.adults,
+        "Enfants : " + data.children,
+        "Couchage : " + data.sleep,
+        "Allergies / régimes : " + (data.allergies || "—")
+      ].join("\n");
+    }
+
+    // Hash simple anti-doublon (même personne, même choix, même quantités)
+    async function digest(str){
+      const enc = new TextEncoder().encode(str);
+      const buf = await crypto.subtle.digest("SHA-256", enc);
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
+    }
+
+    async function sendToSheet(data){
+      // no-cors => pas de lecture de réponse : on considère "ok" si pas d'erreur réseau
+      await fetch(APPS_SCRIPT_ENDPOINT, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data)
+      });
+    }
+
+    function setSendingUI(on){
+      isSending = on;
+      if(sendBtn){
+        sendBtn.disabled = on;
+        sendBtn.style.opacity = on ? "0.65" : "1";
+        sendBtn.textContent = on ? "Envoi…" : "Envoyer";
+      }
+      if(copyBtn){
+        copyBtn.disabled = on;
+        copyBtn.style.opacity = on ? "0.7" : "1";
+      }
+    }
+
+    if(form){
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if(isSending) return;
+
+        const data = getData();
+
+        if(!data.name || !data.attendance){
+          statusEl.textContent = "Merci de renseigner le nom et la présence.";
+          showToast("Champs manquants : nom + présence.");
+          return;
+        }
+
+        // anti-double envoi local (30 minutes)
+        const fingerprintBase = `${data.name}|${data.attendance}|${data.adults}|${data.children}|${data.sleep}|${data.allergies}`;
+        const fp = await digest(fingerprintBase);
+        const key = "rsvp_last_" + fp;
+        const last = Number(localStorage.getItem(key) || "0");
+        const now = Date.now();
+        if(last && (now - last) < (30 * 60 * 1000)){
+          statusEl.textContent = "Déjà envoyé récemment (anti-doublon).";
+          showToast("Déjà envoyé récemment.");
+          return;
+        }
+
+        statusEl.textContent = "Envoi en cours…";
+        setSendingUI(true);
+
+        try{
+          // Timeout réseau "dur" (évite les pendaisons)
+          const controller = new AbortController();
+          const t = setTimeout(() => controller.abort(), 9000);
+
+          await fetch(APPS_SCRIPT_ENDPOINT, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify(data),
+            signal: controller.signal
+          });
+
+          clearTimeout(t);
+
+          localStorage.setItem(key, String(now));
+          statusEl.textContent = "Merci. Réponse envoyée.";
+          showToast("Réponse envoyée ✔");
+
+          form.reset();
+        }catch(err){
+          // fallback : copier un message prêt à envoyer
+          const msg = buildMessage(data);
+          try{ await navigator.clipboard.writeText(msg); }catch(_){}
+          statusEl.textContent = "Envoi impossible. Message copié : colle-le dans WhatsApp/SMS.";
+          showToast("Envoi impossible — message copié.");
+        }finally{
+          setSendingUI(false);
+        }
+      });
+    }
+
+    if(copyBtn){
+      copyBtn.addEventListener("click", async () => {
+        const data = getData();
+        const msg = buildMessage(data);
+        try{
+          await navigator.clipboard.writeText(msg);
+          statusEl.textContent = "Message copié.";
+          showToast("Message copié ✔");
+        }catch(e){
+          statusEl.textContent = "Copie impossible sur cet appareil.";
+          showToast("Copie impossible.");
+        }
+      });
+    }
+  </script>
+</body>
+</html>
